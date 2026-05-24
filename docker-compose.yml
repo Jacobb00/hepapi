@@ -1,0 +1,29 @@
+
+services:
+  # Flask uygulamasi
+  app:
+    build: .
+    container_name: task-manager-app
+    ports:
+      - "5000:5000"                      # Host:Container port mapping
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/TaskManager  # "mongodb" = asagidaki servis adi
+      - SECRET_KEY=supersecretkey123
+    depends_on:
+      mongodb:
+        condition: service_started        # MongoDB baslayana kadar bekle
+    restart: unless-stopped               # Crash olursa otomatik yeniden baslat
+
+  # MongoDB veritabani
+  mongodb:
+    image: mongo:7                        # Resmi MongoDB 7 image'i
+    container_name: task-manager-db
+    ports:
+      - "27017:27017"                     # Disaridan erisim (debug icin)
+    volumes:
+      - mongo_data:/data/db               # Veri kaliciligi (container silinse bile veri kalir)
+    restart: unless-stopped
+
+# Named volume — container silinse bile veri kaybolmaz
+volumes:
+  mongo_data:

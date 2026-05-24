@@ -1,0 +1,52 @@
+# =====================================================
+# Helm values — tum konfigurasyonu buradan yonet
+# helm install task-manager ./helm/task-manager
+# helm install task-manager ./helm/task-manager --set app.replicas=3
+# =====================================================
+##Değişken olan tüm ayarları bu merkezden yöneteceğzi
+##pvc deployment serivces hepsini yek bir paket yapıp helm install ile yükleyebiliriz
+# Flask App ayarlari
+##Buradaki tüm değerler, templates/ klasöründeki YAML dosyalarında {{ .Values.app.replicas }} gibi ifadelerle dinamik olarak çağrılır.
+app:
+  name: task-manager
+  replicas: 2 ##replicaa 5 yapmak istedim diyelim tek tek değiştirmek yerine helm install task-manager --set app.replicas=5 gibi bi değer ver yeter
+  image:
+    repository: task-manager
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 5000
+  service:
+    type: NodePort
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  env:
+    secretKey: "helm-secret-key-change-in-production"
+
+# MongoDB ayarlari
+mongodb:
+  name: mongodb
+  image:
+    repository: mongo
+    tag: "7"
+  port: 27017
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  persistence:
+    size: 1Gi
+  auth:
+    rootUsername: root
+    rootPassword: taskmanager123
+    database: TaskManager

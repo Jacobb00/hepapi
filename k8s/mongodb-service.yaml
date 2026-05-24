@@ -1,0 +1,17 @@
+# MongoDB Service: diger pod'larin MongoDB'ye erisebilmesini saglar
+# ClusterIP = sadece cluster icinden erisilebilir (disariya acik degil)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  namespace: task-manager
+  labels:
+    app: mongodb
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb                  # Hangi pod'lara yonlendirecek
+  ports:
+    - port: 27017                 # Servis portu
+      targetPort: 27017           # Container portu
+      protocol: TCP

@@ -1,0 +1,68 @@
+# MongoDB Deployment: MongoDB container'ini Kubernetes'te calistirir
+apiVersion: apps/v1
+kind: Deployment ##bu podu canlı tut çökerese yeniden başlat
+metadata:
+  name: mongodb
+  namespace: task-manager
+  labels:
+    app: mongodb
+spec:
+  replicas: 1                    # MongoDB tek replica (veritabani tutarlılığı için)
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          env:
+            # Secret'tan MongoDB root kullanici bilgileri
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongo-root-password
+          # Kaynak limitleri — cluster'da adil paylasim icin
+          resources:
+            requests:
+              cpu: 100m           # Minimum CPU
+              memory: 128Mi       # Minimum RAM
+            limits:
+              cpu: 250m           # Maksimum CPU
+              memory: 256Mi       # Maksimum RAM
+          # Veri kaliciligi icin volume mount
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+          # MongoDB'nin hazir olup olmadigini kontrol et
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc

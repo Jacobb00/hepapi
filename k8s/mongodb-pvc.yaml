@@ -1,0 +1,15 @@
+# PersistentVolumeClaim: MongoDB verisi icin kalici disk alani
+# Pod silinse/yeniden baslatilsa bile veri kaybolmaz 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: task-manager
+  labels:
+    app: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce           # Tek node'dan okuma/yazma (MongoDB tek replica)
+  resources:
+    requests:
+      storage: 1Gi            # 1 GB disk alani k8s ten isitcem bunu 

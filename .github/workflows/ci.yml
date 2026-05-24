@@ -1,0 +1,111 @@
+name: CI/CD Pipeline
+
+# Pipeline ne zaman calisir:
+on:
+  push:
+    branches: [main]         # main branch'e push yapildiginda
+  pull_request:
+    branches: [main]         # main branch'e PR acildiginda
+
+jobs:
+  #---------------------------------------------------------------------------
+  # Job 1: Kod kalite kontrolu (Linting)
+  #---------------------------------------------------------------------------
+  lint:
+    name: 🔍 Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8 linter
+        run: flake8 --max-line-length=120 --exclude=__pycache__,.git run.py classes.py
+
+  #---------------------------------------------------------------------------
+  # Job 2: Testler
+  #---------------------------------------------------------------------------
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+  #---------------------------------------------------------------------------
+  # Job 3: Docker image build & push
+  # lint ve test basarili olduktan sonra calisir
+  #---------------------------------------------------------------------------
+  build-and-push:
+    name: 🐳 Build & Push
+    runs-on: ubuntu-latest
+    needs: [lint, test]              # Lint ve test basarili olmali
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'  # Sadece main push'ta
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/task-manager:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/task-manager:${{ github.sha }}
+
+  #---------------------------------------------------------------------------
+  # Job 4 (CD): Kubernetes'e deploy — manual trigger
+  #---------------------------------------------------------------------------
+  deploy:
+    name: 🚀 Deploy to K8s
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/main'
+    # Bu job production ortaminda calismasi icin "production" environment onay gerektirir
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      # NOT: Gercek production'da burada kubeconfig veya
+      # cloud provider credentials (AWS EKS, GKE vb.) ayarlanir
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Deploying to Kubernetes cluster..."
+          # kubectl apply -f k8s/
+          # kubectl set image deployment/task-manager-app \
+          #   task-manager=${{ secrets.DOCKER_HUB_USERNAME }}/task-manager:${{ github.sha }} \
+          #   -n task-manager
+          echo "NOTE: Configure kubeconfig secrets for actual deployment"

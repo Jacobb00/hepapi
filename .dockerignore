@@ -1,0 +1,27 @@
+# Git dosyalari
+.git
+.gitignore
+
+# CI/CD ve Kubernetes dosyalari (image icinde gereksiz)
+.github
+k8s
+helm
+scripts
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# Docker dosyalari
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Dokumanlar
+README.md
+LICENSE
+
+# IDE
+.vscode
+.idea

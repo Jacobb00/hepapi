@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.app.name }}-config ##values.yaml dosyasındaki app.name verisini oku ve -config ekle task-manager-config olur
+  labels:
+    app: {{ .Values.app.name }}
+data:
+  MONGO_URI: "mongodb://{{ .Values.mongodb.auth.rootUsername }}:{{ .Values.mongodb.auth.rootPassword }}@{{ .Values.mongodb.name }}-service:{{ .Values.mongodb.port }}/{{ .Values.mongodb.auth.database }}?authSource=admin"
+  SECRET_KEY: {{ .Values.app.env.secretKey | quote }}

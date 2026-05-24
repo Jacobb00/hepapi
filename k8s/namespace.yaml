@@ -1,0 +1,9 @@
+# Namespace: uygulamayi diger kaynaklardan izole eder
+# "task-manager" namespace'i altinda tum kaynaklar gruplanir
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-manager
+  labels:
+    app: task-manager
+##ilk olarak bu alan açılır diğer tüm kaynaklar bu alanın altından birbirini görerek çalışır

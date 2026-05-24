@@ -1,0 +1,12 @@
+# ConfigMap: uygulama konfigurasyonu (hassas olmayan degerler)
+# Secret'tan farki: sifre gibi gizli olmayan ayarlar burada tutulur
+apiVersion: v1
+kind: ConfigMap ##bu kaynak hassas olmayan conf verisi tutacak
+metadata:
+  name: app-config
+  namespace: task-manager
+  labels:
+    app: task-manager
+data:
+  MONGO_URI: "mongodb://root:taskmanager123@mongodb-service:27017/TaskManager?authSource=admin"
+  SECRET_KEY: "k8s-secret-key-change-in-production" ##session cookie doğrulamalı  bu bi dursun 

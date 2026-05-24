@@ -1,0 +1,58 @@
+# Flask App Deployment: uygulamamizi Kubernetes'te calistirir
+# Deployment ile 3 adet Pod ayağa kalktı ve hepsinin rastgele IP'leri var
+#Bu Pod'lara sabit bir noktadan güvenli bir şekilde ulaşabilmek için bir Service lazım
+
+apiVersion: apps/v1  # kubernetes version numarası 
+kind: Deployment
+metadata:  ##objeye ait kimlik bilgileri
+  name: task-manager-app    # deployment cluster içindeki adresi unique
+  namespace: task-manager
+  labels:
+    app: task-manager
+spec:  ##deploymentin asıl özelliklerini belirtiyoruz
+  replicas: 2   # aynı anda bu poddan 2 tane çalıştır birisi çökerse diğeri devreye grisin
+  selector:
+    matchLabels:
+      app: task-manager
+  # Rolling Update: yeni versiyon ciktiginda sifir downtime ile guncelle
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                      # Guncelleme sirasinda +1 ekstra pod
+      maxUnavailable: 0                # Guncelleme sirasinda 0 pod kapali
+  template:  ##yaratılacak olan podların şablonu
+    metadata:
+      labels:
+        app: task-manager
+    spec:   ##podun içinde çalışacak container listesi
+      containers:
+        - name: task-manager
+          image: task-manager:latest     # Minikube'da lokal image kullanilacak
+          imagePullPolicy: IfNotPresent  # Minikube icin: lokal image'i kullan
+          ports:
+            - containerPort: 5000
+          # ConfigMap'ten environment variable'lari al
+          envFrom:
+            - configMapRef:
+                name: app-config
+          # Kaynak limitleri
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          # Health check: uygulama ayakta mi?
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
