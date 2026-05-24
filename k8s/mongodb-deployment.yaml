@@ -36,11 +36,11 @@ spec:
           # Kaynak limitleri — cluster'da adil paylasim icin
           resources:
             requests:
-              cpu: 100m           # Minimum CPU
-              memory: 128Mi       # Minimum RAM
+              cpu: 250m           # Minimum CPU
+              memory: 256Mi       # Minimum RAM
             limits:
-              cpu: 250m           # Maksimum CPU
-              memory: 256Mi       # Maksimum RAM
+              cpu: 500m           # Maksimum CPU
+              memory: 512Mi       # Maksimum RAM (MongoDB 7 min 512Mi gerektirir)
           # Veri kaliciligi icin volume mount
           volumeMounts:
             - name: mongodb-data
@@ -52,16 +52,18 @@ spec:
                 - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
           livenessProbe:
             exec:
               command:
                 - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
-            initialDelaySeconds: 30
-            periodSeconds: 15
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
       volumes:
         - name: mongodb-data
           persistentVolumeClaim:
