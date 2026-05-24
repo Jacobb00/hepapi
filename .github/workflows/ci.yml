@@ -1,6 +1,6 @@
 name: CI/CD Pipeline
 
-# Pipeline ne zaman calisir:
+# Pipeline ne zaman calisir: dd
 on:
   push:
     branches: [main]         # main branch'e push yapildiginda
