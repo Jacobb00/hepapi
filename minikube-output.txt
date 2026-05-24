@@ -1,0 +1,71 @@
+PS C:\dev\hepapi\flask-mongodb>
+
+
+PS C:\dev\hepapi\flask-mongodb>
+
+PS C:\dev\hepapi\flask-mongodb>
+PS C:\dev\hepapi\flask-mongodb> minikube docker-env --shell powershell | Invoke-Expression
+>> docker build -t task-manager:latest .
+[+] Building 6.0s (11/11) FINISHED     docker:default
+ => [internal] load build definition from Docke  0.1s
+ => => transferring dockerfile: 815B             0.0s
+ => [internal] load metadata for docker.io/libr  5.5s
+ => [internal] load .dockerignore                0.0s
+ => => transferring context: 313B                0.0s
+ => [1/6] FROM docker.io/library/python:3.11-sl  0.0s
+ => [internal] load build context                0.1s
+ => => transferring context: 803B                0.0s
+ => CACHED [2/6] RUN groupadd -r appuser && use  0.0s
+ => CACHED [3/6] WORKDIR /app                    0.0s
+ => CACHED [4/6] COPY requirements.txt .         0.0s
+ => CACHED [5/6] RUN pip install --no-cache-dir  0.0s
+ => CACHED [6/6] COPY . .                        0.0s
+ => exporting to image                           0.0s
+ => => exporting layers                          0.0s
+ => => writing image sha256:624a0086d5d468dd363  0.0s
+ => => naming to docker.io/library/task-manager  0.0s
+
+View build details: docker-desktop://dashboard/build/default/default/3vkvrkr6wz3lthlonzm5vl1jf
+PS C:\dev\hepapi\flask-mongodb> kubectl apply -f k8s/namespace.yaml
+namespace/task-manager unchanged
+PS C:\dev\hepapi\flask-mongodb> kubectl apply -f k8s/namespace.yaml
+>> kubectl apply -f k8s/mongodb-secret.yaml
+>> kubectl apply -f k8s/mongodb-pvc.yaml
+>> kubectl apply -f k8s/mongodb-deployment.yaml       
+>> kubectl apply -f k8s/mongodb-service.yaml
+>> kubectl apply -f k8s/app-configmap.yaml
+>> kubectl apply -f k8s/app-deployment.yaml
+>> kubectl apply -f k8s/app-service.yaml
+namespace/task-manager unchanged
+secret/mongodb-secret unchanged
+persistentvolumeclaim/mongodb-pvc unchanged
+deployment.apps/mongodb unchanged
+service/mongodb-service unchanged
+configmap/app-config unchanged
+deployment.apps/task-manager-app unchanged
+service/task-manager-service unchanged
+PS C:\dev\hepapi\flask-mongodb> kubectl wait --for=condition=ready pod -l app=mongodb -n task-manager --timeout=180s
+>> kubectl wait --for=condition=ready pod -l app=task-manager -n task-manager --timeout=180s
+>> kubectl get pods -n task-manager
+pod/mongodb-5768bb9f97-5shrr condition met
+pod/task-manager-app-b68648979-42b47 condition met
+pod/task-manager-app-b68648979-v65kd condition met
+NAME                               READY   STATUS    RESTARTS   AGE
+mongodb-5768bb9f97-5shrr           1/1     Running   0          6m17s
+task-manager-app-b68648979-42b47   1/1     Running   0          6m16s
+task-manager-app-b68648979-v65kd   1/1     Running   0          6m16s
+PS C:\dev\hepapi\flask-mongodb> kubectl wait --for=condition=ready pod -l app=mongodb -n task-manager --timeout=180s
+>> kubectl wait --for=condition=ready pod -l app=task-manager -n task-manager --timeout=180s
+>> kubectl get pods -n task-manager
+pod/mongodb-5768bb9f97-5shrr condition met
+pod/task-manager-app-b68648979-42b47 condition met
+pod/task-manager-app-b68648979-v65kd condition met
+NAME                               READY   STATUS    RESTARTS   AGE
+mongodb-5768bb9f97-5shrr           1/1     Running   0          6m25s
+task-manager-app-b68648979-42b47   1/1     Running   0          6m24s
+task-manager-app-b68648979-v65kd   1/1     Running   0          6m24s
+PS C:\dev\hepapi\flask-mongodb> minikube service task-manager-service -n task-manager --url
+http://127.0.0.1:50111
+❗  Because you are using a Docker driver on windows, the terminal needs to be open to run it.
+PS C:\dev\hepapi\flask-mongodb> ^C
+PS C:\dev\hepapi\flask-mongodb> 
